@@ -1,0 +1,118 @@
+---
+title: "The Exponential distribution and the CTL"
+author: "Gianluca Merendino"
+output:
+  pdf_document: default
+  fig_width: 3
+  fig_height: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Overview
+In this document we compare the exponential distribution with the Central Limit Theorem by a simulation. We show the behavior of the averages of 40 exponensials. First, we compare the sample mean versus the theoretical mean. Then, we compare the sample variace versus the theoretical variance. At last, we show that the distribution of the mean is approximately a normal distribution. 
+
+
+## Simulation
+
+The exponential distribution is simulated in R with rexpr(n, lambda) function, where lambda is the rate parameter and n is the number of the random numbers that the funcion returns. For all the simulations, lambda is 0.2 and n is 40. To investigate the distribution of the averages will be done 1000 simulation.
+The following code creates a matrix which have 1000 rows (simulations) of 40 random numbers:
+
+```{r}
+lambda <- 0.2
+mean <- 1/lambda 
+sd <- 1/lambda
+n <- 40
+iter <- 1000
+set.seed(43)
+matrix <- matrix(rexp(n * iter, lambda),iter, n)
+```
+The sample mean of each simulation is calculated with the command:
+```{r}
+sample_means <- apply(matrix,1,mean)
+```
+## Sample mean versus Theoretical mean
+The mean of the exponential distribution is 1/lambda, that is:
+```{r}
+1/lambda
+```
+The mean of the sample means is:
+```{r}
+mean(sample_means)
+```
+To compare the two value better, we plot the distribution of the sample means, and we draw the lines of the theoretical mean and the sample mean:  
+```{r, echo=FALSE, fig.height = 4, fig.width = 6, fig.align = "center"}
+exp_mean <- 1/lambda
+sample_mean <- mean(sample_means)
+hist(sample_means, breaks=50, main = "Mean distribution", xlab = "mean value")
+abline(v=exp_mean, col="red", lwd = 3, lty = 3)
+abline(v=sample_mean, col="blue", lwd = 3, lty = 4)
+legend("topright", c("Theoretical mean", "Sample mean"), col=c("red", "blue"), lwd=3, lty = c(3,4))
+```  
+## Sample variance versus Theoretical variance
+To show the different beetwean the sample and the theoretical variance, we calculate the sample variances for each simulations:
+```{r}
+mean_sample_var <- var(sample_means)
+```
+The theoretical variance is:
+```{r}
+theo_sd <- (1/lambda)/sqrt(n)
+theorical_var <- theo_sd^2
+```
+The fololwing table shows how similar they are:
+```{r, echo=F}
+data.frame("Variance"=c(mean_sample_var, theorical_var), row.names = c("Sample Variance","Theoretical variance"))
+```
+## Distribution
+Now we show that the exponential distribution follows the central limit theorem, which states that the distribution of averages of iid variables becomes that of a standard normal as the sample size increases, regardless of the distribution of the iid.
+To show this, we compare the exponential distribution with the distribution of the averages
+```{r, echo=FALSE}
+par(mfrow=c(1,2))
+hist(rexp(1000),breaks = 100, prob = T, main = "Exponential distribution", xlab = "")
+hist(sample_means, prob = TRUE, breaks = 100, main = "Mean distribution", xlab = "")
+x <- seq(min(sample_means), max(sample_means), length = 100)
+y <- dnorm(x, mean = 1/lambda, sd = (1/lambda/sqrt(n)))
+lines(x, y, pch = 30, col = "blue")
+```
+To prove that the ditribution behave how the Central Limit Theorem predict, we show the qq-test. The quantile of the distribution are near the values of a normal distribution, so the CLT is proved.
+```{r, echo=FALSE, fig.height = 4, fig.width = 6, fig.align = "center"}
+qqnorm(sample_means, main ="Normal Q-Q Plot")
+qqline(sample_means, col = "3")
+```
+
+##Appendix
+In this appendix we show all the code used to create the graphs e the tables:
+
+### Sample mean versus Theoretical mean
+```{r, eval=F, fig.height = 4, fig.width = 6, fig.align = "center"}
+exp_mean <- 1/lambda
+sample_mean <- mean(sample_means)
+hist(sample_means, breaks=50, main = "Mean distribution", xlab = "mean value")
+abline(v=exp_mean, col="red", lwd = 3, lty = 3)
+abline(v=sample_mean, col="blue", lwd = 3, lty = 4)
+legend("topright", c("Theoretical mean", "Sample mean"), 
+       col=c("red", "blue"), lwd=3, lty = c(3,4))
+```
+### Sample variance versus Theoretical variance
+The fololwing table shows how similar they are:
+```{r, eval=F}
+data.frame("Variance"=c(mean_sample_var, 
+                        theorical_var), row.names = 
+             c("Sample Variance","Theoretical variance"))
+```
+### Distribution
+```{r, eval=F}
+par(mfrow=c(1,2))
+hist(rexp(1000),breaks = 100, prob = T, main = "Exponential distribution", xlab = "")
+hist(sample_means, prob = TRUE, breaks = 100, main = "Mean distribution", xlab = "")
+x <- seq(min(sample_means), max(sample_means), length = 100)
+y <- dnorm(x, mean = 1/lambda, sd = (1/lambda/sqrt(n)))
+lines(x, y, pch = 30, col = "blue")
+```
+
+```{r, eval=F, fig.height = 4, fig.width = 6, fig.align = "center"}
+qqnorm(sample_means, main ="Normal Q-Q Plot")
+qqline(sample_means, col = "3")
+```

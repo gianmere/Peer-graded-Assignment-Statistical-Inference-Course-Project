@@ -1,0 +1,87 @@
+---
+title: "Guinea Pig Tooth Growtn Experiment"
+author: "Gianluca Merendino"
+date: "04 settembre 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Overview
+
+In this document we analize the ToothGrowth dataset, taken from the R datasets package and titled "The Effect of Vitamin C on Tooth Growth in Guinea Pigs". This dataset shows the response is the length of odontoblasts (cells responsible for tooth growth) in 60 guinea pigs.We start the analisys providing some summary of the data. Then we perform some basic exploratory data analisyst and at the last we use the hypothesis test to compare tooth grown by quantity and delivery method. 
+
+#Data Summary
+
+After loaded the data, we start showing the dimensions of the dataset.
+
+```{r}
+data(ToothGrowth)
+dim(ToothGrowth)
+```
+
+Then we print the first rows of the dataset, to show the kind of data it contains.
+
+```{r}
+head(ToothGrowth)
+```
+To know the type of the column of the dataset we use the command 'str'  
+
+```{r}
+str(ToothGrowth)
+```
+The 'len' indicates the odontoblasts length in mm. The 'dose' is the amount of vitamin C in mg/day. The 'supp' is the delivery method, with OJ which stands for orange juice and VS for ascorbic acid. 
+At the last we show some statistics about the measures of the tooth in the dataset:
+
+```{r}
+summary(ToothGrowth$len)
+```
+
+#Exploratory data analysis
+
+We draw two boxplot to show graphically how the grows of the teeth changes when the amount and the delivery method of the vitamin C change.
+
+```{r,  fig_width = 6, fig_height = 4}
+par(mfrow=c(1,2))
+boxplot(len ~ dose, data = ToothGrowth, main = "Varing the amount" , 
+        xlab="Vitamin Dose (mg/day)", ylab="Odontoblasts length (mm)")
+boxplot(len ~ supp, data = ToothGrowth, main = "Varing the delivery method", 
+        xlab="Delivery method", ylab="Odontoblasts length (mm)")
+```
+We note that the lenght of the teeth grows very much when we increase the dose of the vitamin C and doesn't grow so much when we change the delivery method.
+
+#Hypothesis Test
+
+Starting with what we saw in the exploratory data analysis, we use the hypothesis test to prove that the lenght of the teeth depends of the dose of vitamin C:
+
+```{r,  message=F, warning=F}
+library(dplyr)
+```
+
+```{r}
+dose2.0 <- filter(ToothGrowth, dose == 2)
+dose1.0 <- filter(ToothGrowth, dose == 1)
+
+t.test(dose2.0$len, dose1.0$len, paired = F, var.equal = T, alternative = "greater")
+```
+
+```{r}
+dose1.0 <- filter(ToothGrowth, dose == 1)
+dose0.5 <- filter(ToothGrowth, dose == 0.5)
+
+t.test(dose1.0$len, dose0.5$len, paired = F, var.equal = T, alternative = "greater")
+```
+
+Then we do the same for the delivery method:
+
+```{r}
+VC <- filter(ToothGrowth, supp == 'VC')
+OJ <- filter(ToothGrowth, supp == 'OJ')
+
+t.test(OJ$len, VC$len, paired = F, var.equal = T, alternative = "greater")
+```
+#Conclusions
+
+The hypothesis test confirms the exploratory data analysis. The grows of the teeth depends a lot on the quantity of the vitamin C given to the Guinea pigs (proven by a p-value very litte) and also depends on the delivery mothod of the vitamin C, even if less (bigger value of the p-value). 
